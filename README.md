@@ -8,6 +8,8 @@ genes the cells with the most complete knockdown divide less or die first. This 
 measures that bias across timepoints and bounds its contribution to the reported responses with
 a trimming (Lee) bound. Every number and figure in the article can be rebuilt with one command.
 
+Archived version (v1.0.0): https://doi.org/10.5281/zenodo.24095889
+
 ## Quick start for reviewers (under 1 minute)
 
 ```
@@ -131,4 +133,4 @@ cache after step 04.
 
 ## Citation and license
 
-See `CITATION.cff`. MIT license, see `LICENSE`.
+Archived at Zenodo, https://doi.org/10.5281/zenodo.24095889. See `CITATION.cff`. MIT license, see `LICENSE`.

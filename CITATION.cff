@@ -3,6 +3,8 @@ message: "If you use this code, please cite it as below."
 title: "Survivorship bias in single-cell CRISPR perturbation studies: code and source data"
 type: software
 license: MIT
+version: 1.0.0
+doi: "10.5281/zenodo.24095889"
 repository-code: "https://github.com/huulocmedvnu/survivorship-bias-crispr"
 authors:
   - family-names: Tran
