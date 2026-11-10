@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this code, please cite the article."
+message: "If you use this code, please cite it as below."
 title: "Survivorship bias in single-cell CRISPR perturbation studies: code and source data"
 type: software
 license: MIT
@@ -18,12 +18,3 @@ keywords:
   - CRISPR interference
   - survivorship bias
   - trimming bound
-preferred-citation:
-  type: article
-  title: "Survivorship bias in single-cell CRISPR perturbation studies"
-  authors:
-    - family-names: Tran
-      given-names: Thai Huu Loc
-    - family-names: Nguyen
-      given-names: Thi Van
-  status: submitted
