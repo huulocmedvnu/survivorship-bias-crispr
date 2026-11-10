@@ -40,7 +40,7 @@ fn main() -> Result<()> {
         return pb::run(&a[2], &a[3]);
     }
     if a.len() != 5 && a.len() != 6 {
-        bail!("usage: survb <cache_dir> <dirs.tsv> <pert.tsv> <out.tsv> [half]");
+        bail!("usage: survb pb <cache_dir> <out_prefix>\n       survb <cache_dir> <dirs.tsv> <pert.tsv> <out.tsv> [half]");
     }
     let half: Option<usize> = if a.len() == 6 { Some(a[5].parse()?) } else { None };
     let t0 = Instant::now();
