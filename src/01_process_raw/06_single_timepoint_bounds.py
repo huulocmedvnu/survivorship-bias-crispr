@@ -8,16 +8,19 @@ S = cells / median cells of perturbations with Chronos > -0.3 in that line, capp
 Chronos: K562 ACH-000551, HepG2 ACH-000739, Jurkat ACH-000995, RPE1 = mean of the RPE1SS lines if screened,
 else the median over all lines (reported).
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DATA, SOURCE, SCORER  # noqa: E402
 import os, subprocess
 import numpy as np, pandas as pd
 from scipy.stats import spearmanr
 
-D = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-PB = os.path.expanduser("data/pseudobulk/")
-CACHE = os.path.expanduser("data/dosecurve_cache/")
-DEP = os.path.expanduser("data/depmap/")
-SURVB = os.path.join(D, "tools/survb/target/release/survb")
-OUT = os.path.join(D, "outputs/")
+PB = f"{DATA}/pseudobulk/"
+CACHE = f"{DATA}/dosecurve_cache/"
+DEP = f"{DATA}/depmap/"
+SURVB = str(SCORER)
+OUT = f"{SOURCE}/"
 EPS, MIN_CTRL, TOP = 0.1, 0.5, 200
 
 ge = pd.read_csv(DEP + "CRISPRGeneEffect.csv", index_col=0)
@@ -53,7 +56,8 @@ for line in ["k562ess", "rpe1", "hepg2", "jurkat"]:
         u = l[idx] / np.linalg.norm(l[idx])
         dirs += [(p, int(gidx[j]), float(w)) for j, w in zip(idx, u)]
         perts.append((p, int(gr.n[r]), min(1.0, gr.n[r] / ref), ch.get(p, np.nan)))
-    fd, fp, fb = (OUT + f"phaseR_{line}_{k}.tsv" for k in ("dirs", "pert", "bounds"))
+    fd = f"{DATA}/intermediate/phaseR_{line}_dirs.tsv"; os.makedirs(f"{DATA}/intermediate", exist_ok=True)
+    fp, fb = (OUT + f"phaseR_{line}_{k}.tsv" for k in ("pert", "bounds"))
     pd.DataFrame(dirs, columns=["pert", "gene_index", "weight"]).to_csv(fd, sep="\t", index=False)
     pd.DataFrame(perts, columns=["pert", "n", "S", "chronos"]).to_csv(fp, sep="\t", index=False)
     subprocess.run([SURVB, CACHE + line, fd, fp, fb, "1"], check=True, stderr=subprocess.DEVNULL)

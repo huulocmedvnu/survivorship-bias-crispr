@@ -1,8 +1,12 @@
 """Summarise survb trimming bounds: share of the observed day-8 shift that selection alone could produce."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DATA, SOURCE, SCORER  # noqa: E402
 import os
 import numpy as np, pandas as pd
 from scipy.stats import spearmanr
-O = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "outputs/")
+O = f"{SOURCE}/"
 b = pd.read_csv(O + "phaseP_bounds.tsv", sep="\t")
 p = pd.read_csv(O + "phaseP_pert.tsv", sep="\t")[["pert", "chronos"]]
 k = pd.read_csv(O + "phaseP_killtest.tsv", sep="\t")[["pert", "R", "rep", "m6"]]

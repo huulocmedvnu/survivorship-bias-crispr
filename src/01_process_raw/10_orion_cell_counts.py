@@ -1,13 +1,17 @@
 """Phase O1: X-Atlas/Orion cells per target gene from metadata columns only (HTTP range reads, IPv4),
-checkpointed per file in tahoe/orion_meta/, then compared with DepMap Chronos."""
+checkpointed per file in data/orion/meta_counts/, then compared with DepMap Chronos."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DATA, SOURCE, SCORER  # noqa: E402
 import os, sys, json, time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np, pandas as pd, pyarrow.parquet as pq, requests
 from scipy.stats import spearmanr
-H = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, H)
+H = str(DATA / "orion")
 from httpfile import HTTPFile, S
 REPO = "https://huggingface.co/datasets/Xaira-Therapeutics/X-Atlas-Orion"
-CK = os.path.join(H, "orion_meta"); os.makedirs(CK, exist_ok=True)
+CK = os.path.join(H, "meta_counts"); os.makedirs(CK, exist_ok=True)
 COLS = ["gene_target", "guide_target", "total_counts", "pass_guide_filter"]
 
 files = [x["path"] for x in S.get(REPO.replace("/datasets/", "/api/datasets/") + "/tree/main/data", timeout=60).json() if x["type"] == "file"]
@@ -39,7 +43,7 @@ for fn in sorted(os.listdir(CK)):
         x = pd.read_csv(os.path.join(CK, fn), sep="\t"); x["line"] = fn.split("_")[0]; parts.append(x)
 a = pd.concat(parts)
 print(f"files read: {len(parts)} of {len(files)}")
-ge = pd.read_csv("data/depmap/CRISPRGeneEffect.csv", index_col=0)
+ge = pd.read_csv(f"{DATA}/depmap/CRISPRGeneEffect.csv", index_col=0)
 ge.columns = [c.split(" (")[0] for c in ge.columns]
 IDS = {"HCT116": "ACH-000971", "HEK293T": sys.argv[1] if len(sys.argv) > 1 else None}
 rows = []
@@ -58,4 +62,4 @@ for line, d in a.groupby("line"):
     print(f"\n{line}: {len(x)} genes with Chronos, cells {int(x.n.sum()):,}, Non-Targeting {ntc:,.0f}, reference {ref:.0f} cells")
     print(f"  Spearman log cells vs Chronos: rho {r:.3f}, p {p:.2g}")
     print(x.groupby(q, observed=True).agg(genes=("n", "size"), chronos=("chronos", "median"), cells=("n", "median"), rel=("rel", "median")).round(2).to_string())
-    x.assign(line=line).to_csv(os.path.join(H, "..", "outputs", f"orion_o1_{line}.tsv"), sep="\t")
+    x.assign(line=line).to_csv(os.path.join(SOURCE, f"orion_o1_{line}.tsv"), sep="\t")

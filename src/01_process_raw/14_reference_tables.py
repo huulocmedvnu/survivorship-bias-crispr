@@ -5,16 +5,19 @@ Inputs (see README, full reproduction):
   data/replogle_supp/mmc1.xlsx, mmc2.xlsx         Tables S1 and S2 of Replogle et al. 2022 (per-perturbation summary statistics)
   data/dosecurve_cache/gwps/groups.tsv           cells per perturbation in the K562 genome-wide screen
 Outputs:
-  outputs/ref_k562_chronos.tsv                   gene, chronos (K562, ACH-000551)
-  outputs/ref_replogle_knockdown.tsv             gene, d8, d6 (mean percent knockdown reported by the authors)
-  outputs/ref_gwps_cells.tsv                     g, n
-  outputs/phaseP_same_guides.tsv                 gene, same_guides (identical sgRNA pairs in both K562 libraries)
+  source_data/ref_k562_chronos.tsv                   gene, chronos (K562, ACH-000551)
+  source_data/ref_replogle_knockdown.tsv             gene, d8, d6 (mean percent knockdown reported by the authors)
+  source_data/ref_gwps_cells.tsv                     g, n
+  source_data/phaseP_same_guides.tsv                 gene, same_guides (identical sgRNA pairs in both K562 libraries)
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DATA, SOURCE, SCORER  # noqa: E402
 import os
 import pandas as pd
 
-R = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-D, O = os.path.join(R, "data/"), os.path.join(R, "outputs/")
+D, O = f"{DATA}/", f"{SOURCE}/"
 
 ge = pd.read_csv(D + "depmap/CRISPRGeneEffect.csv", index_col=0)
 ge.columns = [c.split(" (")[0] for c in ge.columns]

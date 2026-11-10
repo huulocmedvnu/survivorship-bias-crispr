@@ -5,16 +5,20 @@ u: top 200 genes by |lfc| of the day-6 all-cell pseudobulk against day-6 control
 CP10k in both screens, target gene excluded), unit norm, signed.
 S: day-8 cell count of the perturbation over the median day-8 count of genome-wide perturbations with Chronos
 > -0.2 (non-essential in K562), capped at 1.
-Output: outputs/phaseP_dirs.tsv (pert, gene_index, weight) and outputs/phaseP_pert.tsv (pert, n8, S, chronos).
+Output: data/intermediate/phaseP_dirs.tsv (pert, gene_index, weight) and source_data/phaseP_pert.tsv (pert, n8, S, chronos).
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DATA, SOURCE, SCORER  # noqa: E402
 import os
 import numpy as np
 import pandas as pd
 
-PB = os.path.expanduser("data/pseudobulk/")
-CACHE = os.path.expanduser("data/dosecurve_cache/gwps/")
-DEPMAP = os.path.expanduser("data/depmap/CRISPRGeneEffect.csv")
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "outputs")
+PB = f"{DATA}/pseudobulk/"
+CACHE = f"{DATA}/dosecurve_cache/gwps/"
+DEPMAP = f"{DATA}/depmap/CRISPRGeneEffect.csv"
+OUT = str(SOURCE); INTER = f"{DATA}/intermediate"; os.makedirs(INTER, exist_ok=True)
 EPS, MIN_CTRL, TOP = 0.1, 0.5, 200
 
 g6 = open(PB + "k562ess.genes.txt").read().split()
@@ -52,7 +56,7 @@ for r, p in enumerate(gr6.g):
     u = l[idx] / np.linalg.norm(l[idx])
     dirs += [(p, int(i8[j]), float(w)) for j, w in zip(idx, u)]
     perts.append((p, int(n8[p]), min(1.0, n8[p] / ref), chronos.get(p, np.nan)))
-pd.DataFrame(dirs, columns=["pert", "gene_index", "weight"]).to_csv(os.path.join(OUT, "phaseP_dirs.tsv"), sep="\t", index=False)
+pd.DataFrame(dirs, columns=["pert", "gene_index", "weight"]).to_csv(os.path.join(INTER, "phaseP_dirs.tsv"), sep="\t", index=False)
 pp = pd.DataFrame(perts, columns=["pert", "n8", "S", "chronos"])
 pp.to_csv(os.path.join(OUT, "phaseP_pert.tsv"), sep="\t", index=False)
 print(f"{len(pp)} perturbations, {len(dirs)} direction entries, median S {pp.S.median():.2f}, "

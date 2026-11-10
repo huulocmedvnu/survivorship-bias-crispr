@@ -1,6 +1,6 @@
 import os, sys
 import numpy as np
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from selection_bound import d_max_from_projections, d_max_many
 
 rng = np.random.default_rng(0)

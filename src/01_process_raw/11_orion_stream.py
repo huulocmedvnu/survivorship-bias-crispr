@@ -2,12 +2,16 @@
 
 usage: python3 o2_orion_stream.py HCT116|HEK293T
 Resumable: a killed run (shutdown, sleep, lost network) restarts from the last checkpoint.
-  state/<line>/genes.npy        token ids of the gene set (fixed from the first file's Non-Targeting cells)
-  state/<line>/ctrl/<batch>.npz Non-Targeting cells: CSR on the gene set (u16 counts), library size; written atomically
-  state/<line>/acc_*.npy        per (target, half) sums of CP10k and log1p(CP10k), cell counts; saved every 10 files
-  state/<line>/done.json        files whose sums are inside the saved accumulators (saved after them)
+  data/orion/state/<line>/genes.npy        token ids of the gene set (fixed from the first file's Non-Targeting cells)
+  data/orion/state/<line>/ctrl/<batch>.npz Non-Targeting cells: CSR on the gene set (u16 counts), library size; written atomically
+  data/orion/state/<line>/acc_*.npy        per (target, half) sums of CP10k and log1p(CP10k), cell counts; saved every 10 files
+  data/orion/state/<line>/done.json        files whose sums are inside the saved accumulators (saved after them)
 Download: curl over IPv4 with resume and retries, two files fetched ahead of processing.
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DATA, SOURCE, SCORER  # noqa: E402
 import os, sys, json, time, zlib, subprocess
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np, pyarrow.parquet as pq, requests
@@ -16,8 +20,7 @@ _c.HAS_IPV6 = False
 
 LINE = sys.argv[1]
 REPO = "https://huggingface.co/datasets/Xaira-Therapeutics/X-Atlas-Orion"
-H = os.path.dirname(os.path.abspath(__file__))
-ST = os.path.join(H, os.environ.get("ORION_STATE", "orion_o2"), LINE); TMP = os.path.join(ST, "tmp"); CT = os.path.join(ST, "ctrl")
+ST = os.path.join(os.environ.get("ORION_STATE", str(DATA / "orion" / "state")), LINE); TMP = os.path.join(ST, "tmp"); CT = os.path.join(ST, "ctrl")
 for d in (ST, TMP, CT):
     os.makedirs(d, exist_ok=True)
 MAXP, NTOK, EVERY = 20000, 38606, int(os.environ.get("ORION_EVERY", 10))

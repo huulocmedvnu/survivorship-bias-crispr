@@ -3,17 +3,21 @@ essential genes shrink relative to day 6 (essential library), as survivorship pr
 
 Inputs (read-only): data/pseudobulk/{k562ess,gwps}.{f32,genes.txt,groups.tsv}
                     DepMap CRISPRGeneEffect.csv (Chronos), K562 = ACH-000551
-Output: outputs/phaseP_killtest.tsv and a printed summary.
+Output: source_data/phaseP_killtest.tsv and a printed summary.
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DATA, SOURCE, SCORER  # noqa: E402
 import os
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
 import statsmodels.formula.api as smf
 
-PB = os.path.expanduser("data/pseudobulk/")
-DEPMAP = os.path.expanduser("data/depmap/CRISPRGeneEffect.csv")
-OUT = os.path.join(os.path.dirname(__file__), "..", "outputs")
+PB = f"{DATA}/pseudobulk/"
+DEPMAP = f"{DATA}/depmap/CRISPRGeneEffect.csv"
+OUT = str(SOURCE)
 EPS, MIN_CTRL, TOP, MIN_REP = 0.1, 0.5, 200, 0.3
 
 

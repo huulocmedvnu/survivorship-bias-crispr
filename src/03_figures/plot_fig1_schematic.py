@@ -3,13 +3,17 @@
 Each row: data (left), a pictogram of the comparison (middle) and a small plot of the readout (right).
 Marks in the readout plots use the estimates reported in the Results.
 Canvas units: 10 per mm, 180 mm wide, so 8 pt is about 28 units.
-Run: python3 figures/make_flowchart.py
+Requires rsvg-convert (librsvg). The scattered cell pictograms use random.seed(3).
 """
-import json, math, os, random, subprocess
+import math, os, random, subprocess, sys
+from pathlib import Path
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-F = HERE
-REL = json.load(open(os.path.join(HERE, "numbers.json")))["drepano"]["CRISPRi, RPL9 and DCAF13"]["rel_n"]
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from analysis import compute_all  # noqa: E402
+from paths import FIGURES  # noqa: E402
+
+F = str(FIGURES)
+REL = compute_all()[0]["drepano"]["CRISPRi, RPL9 and DCAF13"]["rel_n"]
 W = 1800
 INK, GREY, LINE = "#111111", "#8C96A8", "#DCE1EA"
 BLUE, RED, GREEN, PURPLE, ORANGE = "#636EFA", "#EF553B", "#00CC96", "#AB63FA", "#FFA15A"
@@ -117,7 +121,7 @@ for x, d, a in zip(xs, days, [5, 1, 1, 0]):
 bx, by, bh, bw = C3 + 50, y + 200, 120, 280
 axes(bx, by, bw, bh, ylab="cells")
 px = lambda d: bx + 20 + (bw - 40) * (d - 4) / 10
-for col, vals in ((BLUE, [1, 1, 1, 1]), (RED, [REL[str(d)] for d in days])):
+for col, vals in ((BLUE, [1, 1, 1, 1]), (RED, [REL[d] for d in days])):
     add(f"<polyline points='" + " ".join(f"{px(d):.1f},{by - v * bh * 0.9:.1f}" for d, v in zip(days, vals))
         + f"' fill='none' stroke='{col}' stroke-width='4'/>")
     for d, v in zip(days, vals):
@@ -221,4 +225,4 @@ p = os.path.join(F, "Figure1.svg")
 open(p, "w").write(out + "\n")
 subprocess.run(["rsvg-convert", "-w", str(round(180 / 25.4 * 600)), "-b", "white", "-o", os.path.join(F, "Figure1.png"), p], check=True)
 subprocess.run(["rsvg-convert", "-f", "pdf", "-o", os.path.join(F, "Figure1.pdf"), p], check=True)
-print("wrote", p)
+print("wrote output/figures/Figure1.svg, .png and .pdf")

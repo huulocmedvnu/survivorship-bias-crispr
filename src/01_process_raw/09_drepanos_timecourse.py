@@ -1,13 +1,16 @@
 """Phase Q (Drepanos 2026 K562 timecourse, days 4-14 processed together): per guide and day, relative cell number,
 on-target knockdown and effect magnitude along the day-4 direction."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DATA, SOURCE, SCORER  # noqa: E402
 import os
 import numpy as np
 import pandas as pd
 
-D = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-PB = os.path.join(D, "ext/drepano/pb/")
-OUT = os.path.join(D, "outputs/")
-DEPMAP = os.path.expanduser("data/depmap/CRISPRGeneEffect.csv")
+PB = f"{DATA}/drepanos/pb/"
+OUT = f"{SOURCE}/"
+DEPMAP = f"{DATA}/depmap/CRISPRGeneEffect.csv"
 DAYS, EPS, MIN_CTRL, TOP = [4, 7, 10, 14], 0.1, 0.5, 200
 
 ge = pd.read_csv(DEPMAP, index_col=0)

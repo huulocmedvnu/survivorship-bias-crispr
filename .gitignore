@@ -2,8 +2,6 @@ __pycache__/
 *.pyc
 .DS_Store
 data/
-tools/*/target/
-figures/*.png
-figures/*.pdf
-outputs/phaseP_dirs.tsv
-figures/*.svg
+rust_scorer/target/
+output/
+Additional_file_2.zip

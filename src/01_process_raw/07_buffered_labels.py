@@ -1,11 +1,15 @@
 """Do dose-response labels (Song 2025 buffered/sensitive, Mixscale, joint EM from dosecurve) track survivorship?
 Reads data/dosecurve/regime_v4.tsv (K562 essential, 1,033 phenotype groups, labels recomputed in
-the dosecurve project) read-only, joined with Phase P outputs."""
+the dosecurve project) read-only, joined with the Phase P tables in source_data/."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DATA, SOURCE, SCORER  # noqa: E402
 import os
 import numpy as np, pandas as pd
 import statsmodels.formula.api as smf
-O = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "outputs/")
-lab = pd.read_csv(os.path.expanduser("data/dosecurve/regime_v4.tsv"), sep="\t")
+O = f"{SOURCE}/"
+lab = pd.read_csv(f"{DATA}/dosecurve/regime_v4.tsv", sep="\t")
 k = pd.read_csv(O + "phaseP_killtest.tsv", sep="\t")[["pert", "R", "rep", "m6", "chronos", "kd6", "kd8"]]
 b = pd.read_csv(O + "phaseP_bounds.tsv", sep="\t")[["pert", "S", "m", "d_top", "sd_pert", "n_pert"]]
 d = lab.merge(k, left_on="gene", right_on="pert").merge(b, on="pert")

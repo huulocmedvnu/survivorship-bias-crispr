@@ -1,13 +1,17 @@
 """Phase T1: Tahoe-100M survival per (well, cell line) from cell counts, checked against PRISM viability."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DATA, SOURCE, SCORER  # noqa: E402
 import os, re
 import numpy as np, pandas as pd, pyarrow.parquet as pq
 from scipy.stats import spearmanr
-H = os.path.dirname(os.path.abspath(__file__))
-DEP = "data/depmap/"
-OUT = os.path.join(H, "..", "outputs/")
+H = str(DATA / "tahoe")
+DEP = f"{DATA}/depmap/"
+OUT = f"{SOURCE}/"
 norm = lambda s: re.sub(r"[^a-z0-9]", "", re.sub(r"\(.*?\)", "", str(s).lower()))
 
-pf = pq.ParquetFile(os.path.join(H, "meta/obs_metadata.parquet"))
+pf = pq.ParquetFile(os.path.join(H, "obs_metadata.parquet"))
 print("obs columns:", pf.schema_arrow.names, "rows", pf.metadata.num_rows)
 import pyarrow as pa, pyarrow.compute as pc, time
 t0 = time.time()
@@ -22,7 +26,7 @@ counts = counts.rename(columns={"sample_count_sum": "n"})
 print(f"counted {counts.n.sum():,} passing cells in {time.time() - t0:.1f}s")
 cols = ["sample", "plate", "drug", "cell_name"]
 line_col = next(c for c in ["cell_line_id", "cell_line", "cell_name"] if c in cols)
-sm = pd.read_parquet(os.path.join(H, "meta/sample_metadata.parquet"))
+sm = pd.read_parquet(os.path.join(H, "sample_metadata.parquet"))
 sm["conc"] = sm.drugname_drugconc.str.extract(r",\s*([0-9.eE+-]+)\s*,").astype(float)
 c = counts.merge(sm[["sample", "conc"]], on="sample", how="left")
 if "drug" not in c: c = c.merge(sm[["sample", "drug"]], on="sample")
@@ -34,7 +38,7 @@ ref = dm.groupby(["plate", line_col]).agg(dmso_share=("share", "mean"), dmso_n=(
 c = c.merge(ref, on=["plate", line_col], how="left")
 c["rel"] = c.share / c.dmso_share
 c["S"] = c.n / c.dmso_n
-cl = pd.read_parquet(os.path.join(H, "meta/cell_line_metadata.parquet")).drop_duplicates("cell_name")
+cl = pd.read_parquet(os.path.join(H, "cell_line_metadata.parquet")).drop_duplicates("cell_name")
 idmap = dict(zip(cl.Cell_ID_Cellosaur, cl.Cell_ID_DepMap)) if line_col == "cell_line_id" else dict(zip(cl.cell_name, cl.Cell_ID_DepMap))
 c["depmap_id"] = c[line_col].map(idmap)
 c["key"] = c.drug.map(norm)

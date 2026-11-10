@@ -1,11 +1,14 @@
 # Phase Q input: per-guide pseudobulk (mean CP10k, all cells and two interleaved halves) for each K562 day of
 # Drepanos et al. bioRxiv 2026.07.04.736492 (Zenodo 10.5281/zenodo.20722064), plus cells per guide.
-# Run: micromamba run -n psR Rscript scripts/phaseQ_drepano_export.R [days]
+# Run from any directory: Rscript src/01_process_raw/08_drepanos_export.R [days]
 # Memory: each sequencing run (layer) is processed on its own, and CP10k scaling is folded into the group
 # indicator (entries 1e4 / library size / group size), so the count matrix is never copied.
 # Day 14 has one run per modality; cells of the other modality found in a run (stray assignments) are dropped.
 suppressMessages({ library(Seurat); library(Matrix) })
-ext <- "ext/drepano"; out <- "ext/drepano/pb"; dir.create(out, showWarnings = FALSE)
+args_all <- commandArgs(FALSE)
+here <- dirname(normalizePath(sub("^--file=", "", args_all[grep("^--file=", args_all)])))
+root <- normalizePath(file.path(here, "..", ".."))
+ext <- file.path(root, "data", "drepanos"); out <- file.path(ext, "pb"); dir.create(out, showWarnings = FALSE)
 days <- as.integer(commandArgs(TRUE)); if (!length(days)) days <- c(4, 7, 10, 14)
 
 pb_run <- function(m, md) {

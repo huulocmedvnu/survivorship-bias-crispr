@@ -3,18 +3,22 @@ trimming bounds, share of the shift that selection could produce by Chronos bin.
 
 usage: python3 o2_finalize.py HCT116|HEK293T
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DATA, SOURCE, SCORER  # noqa: E402
 import os, sys, json, glob, subprocess
 import numpy as np, pandas as pd
 from scipy.stats import spearmanr
 
 LINE = sys.argv[1]
-H = os.path.dirname(os.path.abspath(__file__)); R = os.path.join(H, "..")
-ST = os.path.join(H, "orion_o2", LINE); CA = os.path.join(ST, "cache"); os.makedirs(CA, exist_ok=True)
-OUT = os.path.join(R, "outputs")
-SURVB = os.path.join(R, "tools/survb/target/release/survb")
+H = str(DATA / "orion")
+ST = os.path.join(H, "state", LINE); CA = os.path.join(ST, "cache"); os.makedirs(CA, exist_ok=True)
+OUT = str(SOURCE)
+SURVB = str(SCORER)
 TOP, MINC = 200, 20
 
-gm = pd.read_parquet(os.path.join(H, "meta/orion_gene_metadata.parquet")).set_index("gene_token_id").gene_name
+gm = pd.read_parquet(os.path.join(H, "gene_metadata.parquet")).set_index("gene_token_id").gene_name
 tok = np.load(os.path.join(ST, "genes.npy")); names = gm.loc[tok].values; G = len(tok)
 
 # ---- control cache in the survb layout (genes.txt, groups.tsv, members, indptr, lib, idx, cnt)
@@ -44,7 +48,7 @@ print(f"{LINE}: control cache {N:,} cells, {G} genes, {len(idx):,} entries")
 # ---- per-target directions and shifts
 targets = json.load(open(os.path.join(ST, "targets.json")))
 acc = {k: np.load(os.path.join(ST, f"acc_{k}.npy")) for k in ("cp", "lg", "n")}
-ge = pd.read_csv("data/depmap/CRISPRGeneEffect.csv", index_col=0)
+ge = pd.read_csv(f"{DATA}/depmap/CRISPRGeneEffect.csv", index_col=0)
 ge.columns = [c.split(" (")[0] for c in ge.columns]
 chron = ge.loc["ACH-000971"] if LINE == "HCT116" else ge.median()
 name_pos = pd.Series(range(G), index=names)

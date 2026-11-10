@@ -1,17 +1,20 @@
-"""Reference check of tools/survb against plain numpy on a few perturbations (uses the local gwps cache)."""
-import os, sys
+"""Check of the Rust scorer (rust_scorer) against plain NumPy on a few perturbations.
+Needs the K562 genome-wide cache in data/ (full reproduction, step 01). Run: python3 tests/check_survb_reference.py"""
+import sys
+from pathlib import Path
 import numpy as np, pandas as pd
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
-from selection_bound import d_max_from_projections
-C = os.path.expanduser("data/dosecurve_cache/gwps/")
-O = os.path.join(os.path.dirname(__file__), "..", "outputs/")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from selection_bound import d_max_from_projections  # noqa: E402
+from paths import DATA, SOURCE  # noqa: E402
+C = f"{DATA}/dosecurve_cache/gwps/"
+O = f"{SOURCE}/"
 ip = np.memmap(C + "indptr.bin", dtype=np.uint64, mode="r")
 idx = np.memmap(C + "idx.bin", dtype=np.uint16, mode="r")
 cnt = np.memmap(C + "cnt.bin", dtype=np.uint16, mode="r")
 lib = np.fromfile(C + "lib.bin", dtype=np.float32)
 mem = np.fromfile(C + "members.bin", dtype=np.uint32)
 gr = pd.read_csv(C + "groups.tsv", sep="\t", header=None, names=["g", "off", "n"]).set_index("g")
-dirs = pd.read_csv(O + "phaseP_dirs.tsv", sep="\t")
+dirs = pd.read_csv(f"{DATA}/intermediate/phaseP_dirs.tsv", sep="\t")
 pert = pd.read_csv(O + "phaseP_pert.tsv", sep="\t").set_index("pert")
 rust = pd.read_csv(O + "phaseP_bounds.tsv", sep="\t").set_index("pert")
 ng = sum(1 for _ in open(C + "genes.txt"))
