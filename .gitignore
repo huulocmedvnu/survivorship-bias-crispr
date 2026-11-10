@@ -6,3 +6,4 @@ tools/*/target/
 figures/*.png
 figures/*.pdf
 outputs/phaseP_dirs.tsv
+figures/*.svg

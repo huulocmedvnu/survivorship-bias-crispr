@@ -1,5 +1,5 @@
 """Phase Q (Drepanos 2026 K562 timecourse, days 4-14 processed together): per guide and day, relative cell number,
-on-target knockdown and effect magnitude along the day-4 direction. Pre-registered before results."""
+on-target knockdown and effect magnitude along the day-4 direction."""
 import os
 import numpy as np
 import pandas as pd

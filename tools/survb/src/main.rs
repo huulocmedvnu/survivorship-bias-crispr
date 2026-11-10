@@ -10,10 +10,12 @@
 //! blocks of perturbations, parallel over cells (rayon), with the dense block row-major so the inner loop is a
 //! contiguous axpy that the compiler vectorizes with NEON.
 //!
-//! usage: survb <cache_dir> <dirs.tsv: pert gene_index weight> <pert.tsv: pert n S chronos> <out.tsv> [half]
+//! usage: survb pb <cache_dir> <out_prefix>   (pseudobulk means: all cells and two interleaved halves)
+//!        survb <cache_dir> <dirs.tsv: pert gene_index weight> <pert.tsv: pert n S chronos> <out.tsv> [half]
 //! half = 0 or 1 keeps only the perturbed cells at even or odd positions of the group member list (the same
 //! interleaved halves as the pseudobulk tool), so a direction built on one half is measured on the other.
 mod cache;
+mod pb;
 use anyhow::{bail, Result};
 use cache::Cache;
 use rayon::prelude::*;
@@ -34,6 +36,9 @@ fn read_tsv(p: &str) -> Result<Vec<Vec<String>>> {
 
 fn main() -> Result<()> {
     let a: Vec<String> = std::env::args().collect();
+    if a.len() == 4 && a[1] == "pb" {
+        return pb::run(&a[2], &a[3]);
+    }
     if a.len() != 5 && a.len() != 6 {
         bail!("usage: survb <cache_dir> <dirs.tsv> <pert.tsv> <out.tsv> [half]");
     }

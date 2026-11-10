@@ -1,4 +1,4 @@
-"""Phase P kill test (pre-registered before results): do day-8 (genome-wide) CRISPRi effects of
+"""Phase P: do day-8 (genome-wide) CRISPRi effects of
 essential genes shrink relative to day 6 (essential library), as survivorship predicts?
 
 Inputs (read-only): data/pseudobulk/{k562ess,gwps}.{f32,genes.txt,groups.tsv}

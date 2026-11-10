@@ -8,7 +8,7 @@ Run: python3 figures/make_flowchart.py
 import json, math, os, random, subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-F = os.path.join(HERE, "figures")
+F = HERE
 REL = json.load(open(os.path.join(HERE, "numbers.json")))["drepano"]["CRISPRi, RPL9 and DCAF13"]["rel_n"]
 W = 1800
 INK, GREY, LINE = "#111111", "#8C96A8", "#DCE1EA"

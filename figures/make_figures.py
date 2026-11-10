@@ -10,15 +10,13 @@ from scipy.stats import spearmanr
 
 R = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 O = os.path.join(R, "outputs/"); F = os.path.join(R, "figures/"); os.makedirs(F, exist_ok=True)
-DEP = os.path.join(R, "data/depmap/")
-SUPP = os.path.join(R, "data/replogle_supp/")
 C = ["#636EFA", "#EF553B", "#00CC96", "#AB63FA", "#FFA15A", "#19D3F3", "#FF6692"]
 BLACK = "#111111"
 rng = np.random.default_rng(1)
 N = {}
 
-ge = pd.read_csv(DEP + "CRISPRGeneEffect.csv", index_col=0); ge.columns = [c.split(" (")[0] for c in ge.columns]
-K562 = ge.loc["ACH-000551"]
+# reference tables written from the raw public files by scripts/export_reference_tables.py
+K562 = pd.read_csv(O + "ref_k562_chronos.tsv", sep="\t", index_col=0).chronos
 
 
 def boot_median(x, b=1000):
@@ -63,11 +61,7 @@ pl = k[np.isfinite(k.placebo) & (k.placebo > 0)]
 r2, p2 = spearmanr(pl.placebo, pl.chronos)
 N["k562_pairs"]["placebo"] = dict(median=round(pl.placebo.median(), 3), rho=round(r2, 3), p=float(p2))
 # authors' knockdown (Table S2)
-x = pd.ExcelFile(SUPP + "mmc2.xlsx")
-a8 = x.parse("TabA_K562_day8_summary_stat"); a6 = x.parse("TabB_K562_day6_summary_stat")
-g = lambda s: s.astype(str).str.split("_").str[1]
-a8["gene"], a6["gene"] = g(a8["genetic perturbation"]), g(a6["genetic perturbation"])
-kd = a8.groupby("gene")["percent knockdown"].mean().to_frame("d8").join(a6.groupby("gene")["percent knockdown"].mean().rename("d6"), how="inner")
+kd = pd.read_csv(O + "ref_replogle_knockdown.tsv", sep="\t", index_col=0)
 kd["chronos"] = kd.index.map(K562); kd = kd.dropna()
 kd["q"] = pd.qcut(kd.chronos, 4, labels=QL)
 r3, p3 = spearmanr(kd.d8 - kd.d6, kd.chronos)
@@ -190,7 +184,7 @@ fig.update_yaxes(title_text="relative cells", row=1, col=1)
 save(style(fig, 1100, 450), "FigureS1")
 
 fig = go.Figure(); N["orion_cells"] = {}
-g8 = pd.read_csv(os.path.expanduser("data/dosecurve_cache/gwps/groups.tsv"), sep="\t", header=None, names=["g", "o", "n"])
+g8 = pd.read_csv(O + "ref_gwps_cells.tsv", sep="\t")
 g8["chronos"] = g8.g.map(K562); g8 = g8.dropna(); g8["rel"] = g8.n / g8.n[g8.chronos > -0.3].median()
 sets = {"K562 genome-wide, day 8": g8}
 for line in ["HCT116", "HEK293T"]:
